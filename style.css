@@ -169,3 +169,33 @@ td:first-child { color: var(--ink); }
 .formula .c { color: var(--ink-3); }
 
 .scroll { overflow-x: auto; }
+
+.cta {
+  display: block;
+  text-decoration: none;
+  background: var(--accent-bg);
+  border-radius: var(--radius);
+  padding: 22px 24px 20px;
+  margin: 0 0 8px;
+}
+.cta-t {
+  display: block;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.cta-s {
+  display: block;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  margin-bottom: 12px;
+}
+.cta-a {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--accent);
+}
