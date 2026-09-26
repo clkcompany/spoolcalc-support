@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How SpoolCalc gets its numbers</title>
+<meta name="description" content="The formulas, the data source and the worked examples behind SpoolCalc. Check any of them by hand.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <a class="brand" href="index.html">SpoolCalc</a>
+  <h1>Where the numbers<br>come from</h1>
+  <p class="lede">You are going to cut steel based on what this app tells you.
+  You should be able to check it. Here is every formula, every source, and a
+  set of worked examples you can run through with a pocket calculator.</p>
+</header>
+
+<h2>The data</h2>
+
+<p>Fitting dimensions come from <strong>ASME B16.9</strong>, U.S. Customary
+tables. Not from a formula, not from another app, not from memory. The tables
+were read from the standard itself and entered one row at a time.</p>
+
+<p>The full text of ASME B16.9 is public, because the standard is incorporated
+by reference into United States federal regulation. You can read the same
+document we used:</p>
+
+<div class="card">
+  <p><a href="https://law.resource.org/pub/us/cfr/ibr/002/asme.b16.9.2003.pdf">law.resource.org/pub/us/cfr/ibr/002/asme.b16.9.2003.pdf</a></p>
+  <p style="margin:8px 0 0">Table 12 for long radius elbows, Table 15 for short
+  radius, Table 17 for tees.</p>
+</div>
+
+<h2>The shortcut that breaks</h2>
+
+<p>Every apprentice learns that a 45 degree elbow takes off
+<span class="num">0.625 × the pipe size</span>. That holds from 4" up. Below
+that, the standard sets a larger minimum and the shortcut is wrong.</p>
+
+<div class="scroll">
+<table>
+  <tr>
+    <th>Pipe</th>
+    <th>Shortcut says</th>
+    <th>ASME says</th>
+    <th>Error</th>
+  </tr>
+  <tr><td class="num">3/4"</td><td class="num">0.469"</td><td class="num">0.750"</td><td class="num">0.281"</td></tr>
+  <tr><td class="num">1"</td><td class="num">0.625"</td><td class="num">0.880"</td><td class="num">0.255"</td></tr>
+  <tr><td class="num">1-1/2"</td><td class="num">0.938"</td><td class="num">1.120"</td><td class="num">0.182"</td></tr>
+  <tr><td class="num">2"</td><td class="num">1.250"</td><td class="num">1.380"</td><td class="num">0.130"</td></tr>
+  <tr><td class="num">3"</td><td class="num">1.875"</td><td class="num">2.000"</td><td class="num">0.125"</td></tr>
+  <tr><td class="num">6"</td><td class="num">3.750"</td><td class="num">3.750"</td><td class="num">none</td></tr>
+</table>
+</div>
+
+<p>Two fittings per offset, so the error doubles. On 3/4" pipe a calculator
+using the shortcut sends you better than half an inch long.</p>
+
+<div class="note">
+  <p>SpoolCalc reads the table, not the shortcut.</p>
+</div>
+
+<h2>The formulas</h2>
+
+<h3>Offset</h3>
+<div class="formula">
+travel&nbsp;&nbsp;= rise / sin(angle)<br>
+advance = rise / tan(angle)<br>
+cut&nbsp;&nbsp;&nbsp;&nbsp; = travel − takeout − takeout − 2 × weld gap
+</div>
+
+<h3>Rolling offset</h3>
+<div class="formula">
+true offset = √(rise² + roll²)<br>
+travel&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = true offset / sin(angle)<br>
+roll angle&nbsp; = atan(roll / rise) &nbsp;<span class="c">← the clock position</span>
+</div>
+
+<h3>Parallel offset</h3>
+<div class="formula">
+shift per line = spacing × tan(angle / 2)
+</div>
+<p>Bend every line at the same point and the perpendicular spacing in the
+diagonal drops to <span class="num">spacing × cos(angle)</span>. The shift puts
+it back. You can check it: <span class="num">shift × sin(angle) + spacing ×
+cos(angle)</span> comes back to the spacing you started with, at any angle.</p>
+
+<h3>Miter cut</h3>
+<div class="formula">
+welds&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = pieces − 1<br>
+cut face&nbsp;&nbsp;&nbsp; = total angle / (2 × welds)<br>
+end piece&nbsp;&nbsp; = radius × tan(turn / 2)<br>
+mid piece&nbsp;&nbsp; = 2 × end piece<br>
+template&nbsp;&nbsp;&nbsp; = (OD / 2) × tan(cut face) × (1 − cos φ)
+</div>
+
+<h3>Branch cut</h3>
+<div class="formula">
+t(φ) = [ √(R² − r²·sin²φ) − r·cos φ·cos α ] / sin α
+</div>
+<p>Two cylinders intersecting. <span class="num">R</span> is the run radius,
+<span class="num">r</span> the branch radius, <span class="num">α</span> the
+angle between the axes, <span class="num">φ</span> the position around the
+branch. At 90 degrees this reduces to
+<span class="num">√(R² − r²·sin²φ)</span>.</p>
+
+<h3>Cutback</h3>
+<div class="formula">
+new takeout = radius × tan(new angle / 2)
+</div>
+
+<h2>Worked examples</h2>
+
+<p>These are published problems from other sources, with their published
+answers. Run them through SpoolCalc and you get the same numbers. Every one of
+them is also a test that runs on each build.</p>
+
+<div class="scroll">
+<table>
+  <tr>
+    <th>Problem</th>
+    <th>Published answer</th>
+    <th>SpoolCalc</th>
+  </tr>
+  <tr>
+    <td>10" offset, 45°</td>
+    <td class="num">travel 14.14", run 10"</td>
+    <td class="num">14 1/8", 10"</td>
+  </tr>
+  <tr>
+    <td>12" offset, 30°</td>
+    <td class="num">travel 24", shrink 3 1/4"</td>
+    <td class="num">24", 3 1/4"</td>
+  </tr>
+  <tr>
+    <td>Rolling: 1 ft rise, 1 ft roll, 45°</td>
+    <td class="num">true offset 1.41421 ft, travel 2 ft</td>
+    <td class="num">same</td>
+  </tr>
+  <tr>
+    <td>Rolling: 12" rise, 18" roll, 45°</td>
+    <td class="num">true offset 21.63", travel 30.59"</td>
+    <td class="num">same</td>
+  </tr>
+  <tr>
+    <td>3 piece 90° miter</td>
+    <td class="num">cut face 22.5°</td>
+    <td class="num">22.5°</td>
+  </tr>
+  <tr>
+    <td>6" LR 90 takeout</td>
+    <td class="num">9"</td>
+    <td class="num">9"</td>
+  </tr>
+  <tr>
+    <td>6" 45° takeout</td>
+    <td class="num">3 3/4"</td>
+    <td class="num">3 3/4"</td>
+  </tr>
+</table>
+</div>
+
+<h3>One you can do on paper</h3>
+
+<p>6" pipe, two long radius 45 elbows, 10" offset, no weld gap.</p>
+
+<div class="formula">
+travel&nbsp; = 10 / sin 45° = 14.142"<br>
+takeout = 3.750" &nbsp;<span class="c">← ASME B16.9, Table 12</span><br>
+cut&nbsp;&nbsp;&nbsp;&nbsp; = 14.142 − 3.750 − 3.750 = 6.642"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 6 5/8"
+</div>
+
+<h2>How it is tested</h2>
+
+<p>86 automated tests run on every build. They cover three different kinds of
+claim, because each one catches a different kind of mistake.</p>
+
+<div class="card">
+  <h3>1. Agreement with the trade</h3>
+  <p>The multipliers printed in every pipefitting handbook are pinned as
+  tests: 11.25° → 5.126, 22.5° → 2.613, 30° → 2.000, 45° → 1.414,
+  60° → 1.155. If a change breaks one, the build fails.</p>
+</div>
+
+<div class="card">
+  <h3>2. Internal consistency</h3>
+  <p>Different screens must not disagree. The takeout the Cutback screen gives
+  you has to equal the takeout the Offset screen uses at the same angle. The arc
+  removed plus the arc left has to equal the whole elbow. A mitered elbow has to
+  get closer to a true arc as you add pieces, never further.</p>
+</div>
+
+<div class="card">
+  <h3>3. Published problems</h3>
+  <p>The worked examples above, taken from sources that have nothing to do with
+  this app, encoded as tests with their published answers.</p>
+</div>
+
+<h2>What this does not prove</h2>
+
+<p>Tests show the maths is sound and matches what the trade publishes. They do
+not show that the app asks you for the right measurement, or that it matches
+the fit-up practice on your job, or that the drawing reads the way you expect
+on a ladder at seven in the morning.</p>
+
+<p>Only real work proves that. If you build something with SpoolCalc and a
+number does not land, that is the most useful thing anyone can send us. Tell us
+the pipe size, the fitting, what you entered and what you measured after:
+<a href="mailto:tech@clk.company">tech@clk.company</a></p>
+
+<div class="note">
+  <p>Fitting dimensions are nominal. Real fittings vary within manufacturing
+  tolerance. Always check the fitting in your hand before you cut.</p>
+</div>
+
+<footer>
+  <a href="index.html">Home</a>
+  <a href="privacy.html">Privacy</a>
+  <a href="terms.html">Terms</a>
+  <a href="mailto:tech@clk.company">Contact</a>
+  <p>© 2026 CLK Company</p>
+</footer>
+
+</div>
+</body>
+</html>
